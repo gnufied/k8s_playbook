@@ -22,12 +22,11 @@ class Cluster
   end
 
   def create
-    create_dir_cmd = ["ssh", "-i", ssh_key, "#{user}@#{server_ip}", "'mkdir -p ~/gce_invoker'"]
+    create_dir_cmd = ["ssh", "-i", ssh_key, "#{user}@#{server_ip}", "mkdir -p ~/gce_invoker"]
     dir_create_string = Shellwords.join(create_dir_cmd)
-    puts dir_create_string
     system(dir_create_string)
 
-    rsyc_array = ["rsync", "-Pav", "-e 'ssh -i #{ssh_key}'", ".", "#{user}@#{server_ip}:gce_invoker/"]
+    rsyc_array = ["rsync", "-Pav", '-e','ssh', '-i', ssh_key, ".", "#{user}@#{server_ip}:gce_invoker/"]
     rsync_cmd = Shellwords.join(rsyc_array)
     system(rsync_cmd)
 
@@ -35,8 +34,8 @@ class Cluster
     ans_cmd1 = Shellwords.join(ans_arr1)
     system(ans_cmd1)
 
-    ans_arr2 = ["ssh", "-i", ssh_key, "#{user}@#{server_ip}", "cd ~/gce_invoker/ansible-playbook && ansible-playbook -s kube.yaml"]
-    ans_cmd1 = Shellwords.join(ans_arr2)
+    ans_arr2 = ["ssh", "-i", ssh_key, "#{user}@#{server_ip}", "cd ~/gce_invoker/ansible-playbook && ansible-playbook kube.yaml"]
+    ans_cmd2 = Shellwords.join(ans_arr2)
     system(ans_cmd2)
   end
 end
