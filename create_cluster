@@ -1,16 +1,66 @@
 #!/usr/bin/env ruby
 
-require 'slop'
+require 'thor'
+require 'shellwords'
+require 'net/ssh'
 
 class Cluster
-  attr_accessor :user, :ssh_key, :ip_address
-  def initialize(options = {})
-    @user = options[:user] || 'ubuntu'
-    @ssh_key = options[:ssh_key] || "#{ENV['HOME']}/.ssh/google_compute_engine"
-    @ip_address = options[:ip_address]
+  attr_accessor :user, :ssh_key, :server_ip
+  def initialize(p_server_ip, options = {})
+    @server_ip = p_server_ip
+    if options[:user] && !options[:user].empty?
+      self.user = options[:user]
+    else
+      self.user = 'ubuntu'
+    end
+
+    if options[:ssh_key] && !options[:ssh_key].empty?
+      self.ssh_key = options[:ssh_key]
+    else
+      self.ssh_key = File.expand_path(File.join(ENV['HOME'], ".ssh/google_compute_engine"))
+    end
   end
 
   def create
-
+    puts "Calling create #{server_ip} #{user} #{ssh_key}"
   end
 end
+
+class ClusterCLI < Thor
+  def self.start(*args)
+    cli_args = args.flatten
+    # If it is not a valid task, it is probably file argument
+    if default_create_command?(cli_args)
+      args = [cli_args.unshift("create")]
+    end
+    super(*args)
+  end
+
+  desc "create", "Create a kubernetes cluster"
+  option :ssh_key,
+    type: :string,
+    banner: "SSH key to use for login",
+    aliases: [:k]
+  option :user,
+    type: :string,
+    banner: "User to use, default: Ubuntu",
+    aliases: [:u]
+  def create(server_ip)
+    cluster = Cluster.new(server_ip, options)
+    cluster.create
+  end
+
+  private
+  def self.default_create_command?(args)
+    command_name = args.first
+    command_name &&
+      !command_name.match(/^-/) &&
+      !valid_tasks.include?(command_name)
+  end
+
+  def self.valid_tasks
+    tasks.keys + ["help"]
+  end
+end
+
+ClusterCLI.start(ARGV)

@@ -1,13 +1,15 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    slop (4.4.1)
+    net-ssh (3.2.0)
+    thor (0.19.1)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
-  slop
+  net-ssh
+  thor
 
 BUNDLED WITH
    1.13.5

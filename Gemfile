@@ -1,3 +1,4 @@
 source "https://rubygems.org"
 
-gem 'slop'
+gem 'thor'
+gem 'net-ssh'
