@@ -1,0 +1,59 @@
+---
+- hosts: all
+
+- hosts: all
+  vars:
+    nonroot_user: '{{ ansible_env.SUDO_USER }}'
+  tasks:
+    - name: Install basic packages
+      apt: name={{item}} state=installed
+      with_items:
+        - build-essential
+        - ruby
+        - ruby-dev
+        - ruby-bundler
+        - git
+        - libxml2-dev
+        - wget
+        - docker.io
+        - htop
+    - name: Install go
+      command: "{{item}} chdir=/usr/local creates=/usr/local/go"
+      with_items:
+        - "wget -nv https://storage.googleapis.com/golang/go1.7.linux-amd64.tar.gz"
+        - "tar -zxf go1.7.linux-amd64.tar.gz"
+    - name: Add GOROOT
+      lineinfile:
+        dest: /etc/environment
+        line: "export GOROOT='/usr/local/go'"
+    - name: add GOROOT to path
+      lineinfile: >
+        dest=/etc/environment
+        state=present
+        backrefs=yes
+        regexp='PATH=(["]*)((?!.*?/usr/local/go/bin).*?)(["]*)$'
+        line="PATH=\1\2:/usr/local/go/bin\3"
+    - name: Clone invoker
+      command: >
+        chdir=/tmp
+        creates=/tmp/invoker
+        git clone https://github.com/code-mancers/invoker.git
+    - name: Check if cloned
+      stat:
+        path: /tmp/invoker
+      register: invoker_stat_result
+    - name: Install invoker
+      command: "{{item}} chdir=/tmp/invoker creates=/usr/local/bin/invoker"
+      with_items:
+        - "gem build invoker.gemspec"
+        - "gem install invoker-1.5.2.gem"
+      when: invoker_stat_result.stat.exists == True
+    - name: Install etcd
+      command: "{{item}} chdir=/tmp creates=/usr/bin/etcd"
+      with_items:
+        - "wget -nv https://github.com/coreos/etcd/releases/download/v3.0.15/etcd-v3.0.15-linux-amd64.tar.gz"
+        - "tar -zxf etcd-v3.0.15-linux-amd64.tar.gz"
+        - "cp etcd-v3.0.15-linux-amd64/etcd /usr/bin/."
+        - "cp etcd-v3.0.15-linux-amd64/etcdctl /usr/bin/."
+    - name: Reset permissions of ansible
+      command: "chown -R {{noroot_user}}:{{nonroot_user}} /home/{{nonroot_user}}/.ansible"

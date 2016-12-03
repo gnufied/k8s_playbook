@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+
+require 'slop'
+
+class Cluster
+  attr_accessor :user, :ssh_key, :ip_address
+  def initialize(options = {})
+    @user = options[:user] || 'ubuntu'
+    @ssh_key = options[:ssh_key] || "#{ENV['HOME']}/.ssh/google_compute_engine"
+    @ip_address = options[:ip_address]
+  end
+
+  def create
+
+  end
+end

@@ -1,0 +1,40 @@
+---
+- hosts: all
+
+- hosts: all
+  vars:
+    k8s_home: "/home/{{ansible_env.USER}}/goal/src/k8s.io/kubernetes"
+    nonroot_user: '{{ ansible_env.USER }}'
+  environment:
+    GOPATH: "/home/{{nonroot_user}}/goal"
+    GOROOT: /usr/local/go
+    PATH: '{{ ansible_env.PATH }}:/home/{{nonroot_user}}/goal/bin:/usr/local/go/bin'
+  tasks:
+    - name: create GOPATH
+      command: "mkdir -p /home/{{nonroot_user}}/goal"
+    - name: add GOPATH to shell
+      lineinfile:
+        dest: "/home/{{nonroot_user}}/.bashrc"
+        line: "export GOPATH=$HOME/goal"
+    - name: Add GOPATH to path
+      lineinfile:
+        dest: "/home/{{nonroot_user}}/.bashrc"
+        line: "export PATH=$GOPATH/bin:$PATH"
+    - name: Install dummy package in GOPATH
+      command: "go get -u github.com/motemen/gore"
+    - name: Create directory for k8s clone
+      command: "mkdir -p /home/{{nonroot_user}}/goal/src/k8s.io"
+    - name: Check if kube is cloned
+      stat:
+        path: "{{ k8s_home }}"
+      register: k8s_stat
+    - name: Clone Kube in GOPATH
+      command: "git clone https://github.com/gnufied/kubernetes.git chdir=/home/{{nonroot_user}}/goal/src/k8s.io"
+      when: k8s_stat.stat.exists == False
+    - name: Refresh kube clone
+      command: "git pull origin master chdir={{ k8s_home }}"
+      when: k8s_stat.stat.exists == True
+    - name: Compile Kube
+      command: >
+        chdir={{ k8s_home }}
+        make
