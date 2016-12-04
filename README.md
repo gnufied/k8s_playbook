@@ -8,6 +8,8 @@ aws/gce or bare metal pretty quickly. Few major differences from kube-up.sh
 * Assumes a running instance accessible via ssh key. In case of GCE - instance should have Compute and storage
   permissions at minimum (You can set these permissions when you boot an instance.)
 
+![GCE Perm](https://github.com/gnufied/k8s-playbook/raw/master/images/gce_perm.png "GCE perm")
+
 ### Getting started
 
 Here are the steps to getting started quickly(all done on your personal computer).
@@ -27,7 +29,10 @@ Here are the steps to getting started quickly(all done on your personal computer
 
 Some things to keep in mind, do not foget *trailing /* when giving path to compiled binaries. Without `-l`
 option, kubernetes will be compiled on the cloud vm. Compiled directory is rsynced to cloud vm, do not use
-symbolic links to path.
+symbolic links to path. A sample invocation could be:
+```
+~> ./create_cluster 128.0.0.1 -u ubuntu -k ~/.ssh/awskey.pem -l /home/gnufied/goal/src/k8s.io/kubernetes/_output/local/bin/linux/amd64/
+```
 * SSH to your cluster:
 
 ```
