@@ -4,21 +4,21 @@ sleep = 10
 index = 1
 
 [api_server]
-command = kube-apiserver --logtostderr=true --v=1 --etcd_servers=http://0.0.0.0:4001 --address=0.0.0.0 --port=8080 --allow_privileged=true  --portal_net=10.254.0.0/16 --admission_control=NamespaceAutoProvision,LimitRanger,ResourceQuota
+command = kube-apiserver --logtostderr=true --v={{level}} --etcd_servers=http://0.0.0.0:4001 --address=0.0.0.0 --port=8080 --allow_privileged=true  --portal_net=10.254.0.0/16 --admission_control=NamespaceAutoProvision,LimitRanger,ResourceQuota
 index = 2
 
 [controller]
-command = kube-controller-manager --logtostderr=true --v=1 --master=http://0.0.0.0:8080
+command = kube-controller-manager --logtostderr=true --v={{level}} --master=http://0.0.0.0:8080
 index = 3
 
 [scheduler]
-command = kube-scheduler --logtostderr=true --v=1 --master=http://0.0.0.0:8080
+command = kube-scheduler --logtostderr=true --v={{level}} --master=http://0.0.0.0:8080
 index = 4
 
 [proxy]
-command = kube-proxy --logtostderr=true --v=1 --master=http://0.0.0.0:8080
+command = kube-proxy --logtostderr=true --v={{level}} --master=http://0.0.0.0:8080
 index = 5
 
 [kubelet]
-command = kubelet --logtostderr=true --v=1 --api_servers=http://0.0.0.0:8080 --address=0.0.0.0 --hostname_override={{ansible_hostname}}  --allow_privileged=true
+command = kubelet --logtostderr=true --v={{level}} --api_servers=http://0.0.0.0:8080 --address=0.0.0.0 --hostname_override={{ansible_hostname}}  --allow_privileged=true
 index = 6
