@@ -5,7 +5,7 @@ index = 1
 
 {% if ansible_local.cloud.general.name is defined %}
   [api_server]
-  command = kube-apiserver --logtostderr=true --v={{level}} --cloud-provider={{ansible_local.cloud.general.name}} --cloud-config={{anbsible_local.cloud.general.cloud_config}} --etcd_servers=http://0.0.0.0:4001 --address=0.0.0.0 --port=8080 --allow_privileged=true  --portal_net=10.254.0.0/16 --admission_control=NamespaceAutoProvision,LimitRanger,ResourceQuota
+  command = kube-apiserver --logtostderr=true --v={{level}} --cloud-provider={{ansible_local.cloud.general.name}} --cloud-config={{ansible_local.cloud.general.cloud_config}} --etcd_servers=http://0.0.0.0:4001 --address=0.0.0.0 --port=8080 --allow_privileged=true  --portal_net=10.254.0.0/16 --admission_control=NamespaceAutoProvision,LimitRanger,ResourceQuota
   index = 2
 {% else %}
   [api_server]
@@ -15,7 +15,7 @@ index = 1
 
 {% if ansible_local.cloud.general.name is defined %}
   [controller]
-  command = kube-controller-manager --logtostderr=true --v={{level}} --cloud-provider={{ansible_local.cloud.general.name}} --cloud-config={{anbsible_local.cloud.general.cloud_config}} --master=http://0.0.0.0:8080
+  command = kube-controller-manager --logtostderr=true --v={{level}} --cloud-provider={{ansible_local.cloud.general.name}} --cloud-config={{ansible_local.cloud.general.cloud_config}} --master=http://0.0.0.0:8080
   index = 3
 {% else %}
   [controller]
@@ -33,7 +33,7 @@ index = 5
 
 {% if ansible_local.cloud.general.name is defined %}
 [kubelet]
-  command = kubelet --logtostderr=true --v={{level}} --cloud-provider={{ansible_local.cloud.general.name}} --cloud-config={{anbsible_local.cloud.general.cloud_config}} --api_servers=http://0.0.0.0:8080 --address=0.0.0.0 --hostname_override={{ansible_hostname}}  --allow_privileged=true
+  command = kubelet --logtostderr=true --v={{level}} --cloud-provider={{ansible_local.cloud.general.name}} --cloud-config={{ansible_local.cloud.general.cloud_config}} --api_servers=http://0.0.0.0:8080 --address=0.0.0.0 --hostname_override={{ansible_hostname}}  --allow_privileged=true
   index = 6
 {% else %}
   [kubelet]
