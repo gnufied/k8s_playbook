@@ -36,14 +36,14 @@
     - name: Clone invoker
       command: >
         chdir=/tmp
-        creates=/tmp/invoker
-        git clone https://github.com/code-mancers/invoker.git
+        creates=/tmp/invoker_gem
+        git clone https://github.com/code-mancers/invoker.git invoker_gem
     - name: Check if cloned
       stat:
-        path: /tmp/invoker
+        path: /tmp/invoker_gem
       register: invoker_stat_result
     - name: Install invoker
-      command: "{{item}} chdir=/tmp/invoker creates=/usr/local/bin/invoker"
+      command: "{{item}} chdir=/tmp/invoker_gem creates=/usr/local/bin/invoker"
       with_items:
         - "gem build invoker.gemspec"
         - "gem install invoker-1.5.2.gem"

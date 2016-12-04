@@ -16,9 +16,9 @@ command = kube-scheduler --logtostderr=true --v=1 --master=http://0.0.0.0:8080
 index = 4
 
 [proxy]
-command = kube-proxy --logtostderr=true --logtostderr=true --master=http://0.0.0.0:8080
+command = kube-proxy --logtostderr=true --v=1 --master=http://0.0.0.0:8080
 index = 5
 
 [kubelet]
-command = kubelet --logtostderr=true --v=1 --api_servers=http://0.0.0.0:8080 --address=0.0.0.0 --hostname_override={{hostname}}  --allow_privileged=true
+command = kubelet --logtostderr=true --v=1 --api_servers=http://0.0.0.0:8080 --address=0.0.0.0 --hostname_override={{ansible_hostname}}  --allow_privileged=true
 index = 6
