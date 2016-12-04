@@ -1,8 +1,0 @@
-#!/usr/bin/env ruby
-
-puts ARGV[0]
-
-loop do
-  puts "Wow"
-  sleep(1)
-end
