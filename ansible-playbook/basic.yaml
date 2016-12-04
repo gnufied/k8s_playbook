@@ -57,3 +57,11 @@
         - "cp etcd-v3.0.15-linux-amd64/etcdctl /usr/bin/."
     - name: Reset permissions of ansible
       command: "chown -R {{nonroot_user}}:{{nonroot_user}} /home/{{nonroot_user}}/.ansible"
+    - name: Configure Cloud
+      command: "mkdir -p /etc/cloud"
+    - name: Create cloud config file
+      template: >
+        src=invoker_files/{{ansible_local.cloud.general.name}}.j2
+        dest=/etc/cloud/{{ansible_local.cloud.general.name}}.conf
+
+

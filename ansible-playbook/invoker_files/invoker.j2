@@ -3,13 +3,25 @@ command = etcd --name=default --data-dir=/var/lib/etcd/default.etcd --listen-cli
 sleep = 10
 index = 1
 
-[api_server]
-command = kube-apiserver --logtostderr=true --v={{level}} --etcd_servers=http://0.0.0.0:4001 --address=0.0.0.0 --port=8080 --allow_privileged=true  --portal_net=10.254.0.0/16 --admission_control=NamespaceAutoProvision,LimitRanger,ResourceQuota
-index = 2
+{% if ansible_local.cloud.general.name is defined %}
+  [api_server]
+  command = kube-apiserver --logtostderr=true --v={{level}} --cloud-provider={{ansible_local.cloud.general.name}} --cloud-config={{anbsible_local.cloud.general.cloud_config}} --etcd_servers=http://0.0.0.0:4001 --address=0.0.0.0 --port=8080 --allow_privileged=true  --portal_net=10.254.0.0/16 --admission_control=NamespaceAutoProvision,LimitRanger,ResourceQuota
+  index = 2
+{% else %}
+  [api_server]
+  command = kube-apiserver --logtostderr=true --v={{level}} --etcd_servers=http://0.0.0.0:4001 --address=0.0.0.0 --port=8080 --allow_privileged=true  --portal_net=10.254.0.0/16 --admission_control=NamespaceAutoProvision,LimitRanger,ResourceQuota
+  index = 2
+{% endif %}
 
-[controller]
-command = kube-controller-manager --logtostderr=true --v={{level}} --master=http://0.0.0.0:8080
-index = 3
+{% if ansible_local.cloud.general.name is defined %}
+  [controller]
+  command = kube-controller-manager --logtostderr=true --v={{level}} --cloud-provider={{ansible_local.cloud.general.name}} --cloud-config={{anbsible_local.cloud.general.cloud_config}} --master=http://0.0.0.0:8080
+  index = 3
+{% else %}
+  [controller]
+  command = kube-controller-manager --logtostderr=true --v={{level}} --master=http://0.0.0.0:8080
+  index = 3
+{% endif %}
 
 [scheduler]
 command = kube-scheduler --logtostderr=true --v={{level}} --master=http://0.0.0.0:8080
@@ -19,6 +31,12 @@ index = 4
 command = kube-proxy --logtostderr=true --v={{level}} --master=http://0.0.0.0:8080
 index = 5
 
+{% if ansible_local.cloud.general.name is defined %}
 [kubelet]
-command = kubelet --logtostderr=true --v={{level}} --api_servers=http://0.0.0.0:8080 --address=0.0.0.0 --hostname_override={{ansible_hostname}}  --allow_privileged=true
-index = 6
+  command = kubelet --logtostderr=true --v={{level}} --cloud-provider={{ansible_local.cloud.general.name}} --cloud-config={{anbsible_local.cloud.general.cloud_config}} --api_servers=http://0.0.0.0:8080 --address=0.0.0.0 --hostname_override={{ansible_hostname}}  --allow_privileged=true
+  index = 6
+{% else %}
+  [kubelet]
+  command = kubelet --logtostderr=true --v={{level}} --api_servers=http://0.0.0.0:8080 --address=0.0.0.0 --hostname_override={{ansible_hostname}}  --allow_privileged=true
+  index = 6
+{% endif %}
