@@ -37,4 +37,20 @@
     - name: Compile Kube
       command: >
         chdir={{ k8s_home }}
+        creates={{ k8s_home }}/_output/bin/kubectl
         make
+    - name: Copy the binaries
+      command: >
+        chdir={{ k8s_home }}/_output/bin
+        cp {{item}} /usr/local/bin/
+      with_items:
+        - kubeadm
+        - kubectl
+        - hyperkube
+        - kube-apiserver
+        - kube-dns
+        - kube-controller-manager
+        - kube-discovery
+        - kubelet
+        - kube-scheduler
+      become: true
