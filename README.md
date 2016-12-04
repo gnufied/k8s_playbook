@@ -12,14 +12,14 @@ aws/gce or bare metal pretty quickly. Few major differences from kube-up.sh
 
 Here are the steps to getting started quickly(all done on your personal computer).
 
-1. Clone the project via:
+* Clone the project via:
 
 ```
 ~> git clone git@github.com:gnufied/k8s_playbook
 ```
-2. Create a `cloud.fact` file in root of your cloned repo. Example fact files for gce and aws are
+* Create a `cloud.fact` file in root of your cloned repo. Example fact files for gce and aws are
    included in `example_facts` directory of this project. Modify `cloud.fact` as needed.
-3. Launch kubernetes cluster:
+* Launch kubernetes cluster:
 
 ```
 ~> ./create_cluster <ip_address> -u <user> -k <ssh_private_key> -l <location_of_compiled_k8s_binaries>
@@ -28,12 +28,12 @@ Here are the steps to getting started quickly(all done on your personal computer
 Some things to keep in mind, do not foget *trailing /* when giving path to compiled binaries. Without `-l`
 option, kubernetes will be compiled on the cloud vm. Compiled directory is rsynced to cloud vm, do not use
 symbolic links to path.
-4. SSH to your cluster:
+* SSH to your cluster:
 
 ```
 ~> kubectl get nodes
 ```
-5. Kubernetes and etcd are running using `invoker` on cloud vm. Invoker(http://invoker.codemancers.com/) is kind of a process supervisor.
+* Kubernetes and etcd are running using `invoker` on cloud vm. Invoker(http://invoker.codemancers.com/) is kind of a process supervisor.
    Use following commands to interact with your instance on Cloud VM:
 
 ```
