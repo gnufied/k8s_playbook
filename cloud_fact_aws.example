@@ -1,0 +1,4 @@
+[general]
+name=gce
+zone=us-east1-d
+cloud_config=/etc/cloud/gce.conf
