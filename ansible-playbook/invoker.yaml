@@ -39,6 +39,6 @@
         chdir={{invoker_root}}
         {{item}}
       with_items:
-        - "kubectl config set-cluster local --server=0.0.0.0:8080 --kubeconfig={{nonroot_user}}/.kube/config"
+        - "kubectl config set-cluster local --server=0.0.0.0:8080 --kubeconfig=/home/{{nonroot_user}}/.kube/config"
         - "kubectl config set-context local --cluster=local"
         - "kubectl config use-context local"
