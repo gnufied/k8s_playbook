@@ -1,4 +1,6 @@
 [general]
-name=gce
-zone=us-east1-d
-cloud_config=/etc/cloud/gce.conf
+name=aws
+zone=us-east-1d
+cloud_config=/etc/cloud/aws.conf
+aws_key=access_key
+aws_secret=access_secret
