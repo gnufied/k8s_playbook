@@ -1,0 +1,16 @@
+conversion-gen
+deepcopy-gen
+e2e_node.test
+e2e.test
+gendocs
+genfeddocs
+genkubedocs
+genman
+genswaggertypedocs
+genyaml
+ginkgo
+hyperkube
+linkcheck
+mungedocs
+src
+teststale

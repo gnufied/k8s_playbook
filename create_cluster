@@ -31,28 +31,30 @@ class Cluster
     dir_create_string = Shellwords.join(create_dir_cmd)
     system(dir_create_string)
 
-    ssh_option = Shellwords.escape("ssh -i #{ssh_key}")
-
     rsyc_array = ["rsync", "-Pav", '-e', ssh_option, ".", "#{user}@#{server_ip}:gce_invoker/"]
     rsync_cmd = Shellwords.join(rsyc_array)
     puts rsync_cmd
     system(rsync_cmd)
 
-    # ans_arr1 = ["ssh", "-i", ssh_key, "#{user}@#{server_ip}", "cd ~/gce_invoker/ansible-playbook && sudo ./bootstrap.sh"]
-    # ans_cmd1 = Shellwords.join(ans_arr1)
-    # system(ans_cmd1)
+    ans_arr1 = ["ssh", "-i", ssh_key, "#{user}@#{server_ip}", "cd ~/gce_invoker/ansible-playbook && sudo ./bootstrap.sh"]
+    ans_cmd1 = Shellwords.join(ans_arr1)
+    system(ans_cmd1)
 
-    # if local_upload?
-    #   sync_local_kube(location)
-    # else
-    #   ans_arr2 = ["ssh", "-i", ssh_key, "#{user}@#{server_ip}", "cd ~/gce_invoker/ansible-playbook && ansible-playbook kube.yaml"]
-    #   ans_cmd2 = Shellwords.join(ans_arr2)
-    #   system(ans_cmd2)
-    # end
+    if local_upload?
+      sync_local_kube(location)
+    else
+      ans_arr2 = ["ssh", "-i", ssh_key, "#{user}@#{server_ip}", "cd ~/gce_invoker/ansible-playbook && ansible-playbook kube.yaml"]
+      ans_cmd2 = Shellwords.join(ans_arr2)
+      system(ans_cmd2)
+    end
 
-    # invoker_arr = ["ssh", "-i", ssh_key, "#{user}@#{server_ip}", "cd ~/gce_invoker/ansible-playbook && ansible-playbook invoker.yaml"]
-    # invoker_cmd = Shellwords.join(invoker_arr)
-    # system(invoker_cmd)
+    invoker_arr = ["ssh", "-i", ssh_key, "#{user}@#{server_ip}", "cd ~/gce_invoker/ansible-playbook && ansible-playbook invoker.yaml"]
+    invoker_cmd = Shellwords.join(invoker_arr)
+    system(invoker_cmd)
+  end
+
+  def ssh_option
+    "ssh -i #{ssh_key}"
   end
 
   def local_upload?
@@ -61,7 +63,11 @@ class Cluster
 
   # copy local files to path
   def sync_local_kube(kube_binary_path)
-    rsyc_array = ["rsync", "-Pav", '-e','ssh', '-i', ssh_key, kube_binary_path, "#{user}@#{server_ip}:kube_binary/"]
+    rsyc_array = [
+      "rsync", "-Pavz", '-e', ssh_option,
+      "--exclude-from", "exclude_list.txt",
+      kube_binary_path, "#{user}@#{server_ip}:kube_binary/"
+    ]
     rsync_cmd = Shellwords.join(rsyc_array)
     system(rsync_cmd)
 

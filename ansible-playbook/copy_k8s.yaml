@@ -10,19 +10,24 @@
     GOROOT: /usr/local/go
     PATH: '{{ ansible_env.PATH }}:/home/{{nonroot_user}}/goal/bin:/usr/local/go/bin'
   tasks:
+    - name: Check if invoker is running
+      stat:
+        path: /tmp/invoker
+      register: invoker_state
+    - name: Stop invoker if running
+      command: >
+        invoker stop
+      become: true
+      when: invoker_state.stat.exists == True
     - name: Copy the binaries
       command: >
         chdir={{ k8s_home }}/
-        creates=/usr/local/bin/kubectl
         cp {{item}} /usr/local/bin/
       with_items:
-        - kubeadm
         - kubectl
-        - hyperkube
         - kube-apiserver
         - kube-dns
         - kube-controller-manager
-        - kube-discovery
         - kubelet
         - kube-scheduler
         - kube-proxy
