@@ -29,27 +29,35 @@ class Cluster
   def create
     create_dir_cmd = ["ssh", "-i", ssh_key, "#{user}@#{server_ip}", "mkdir -p ~/gce_invoker"]
     dir_create_string = Shellwords.join(create_dir_cmd)
-    system(dir_create_string)
+    run_and_exit(dir_create_string)
 
     rsyc_array = ["rsync", "-Pav", '-e', ssh_option, ".", "#{user}@#{server_ip}:gce_invoker/"]
     rsync_cmd = Shellwords.join(rsyc_array)
-    system(rsync_cmd)
+    run_and_exit(rsync_cmd)
 
     ans_arr1 = ["ssh", "-i", ssh_key, "#{user}@#{server_ip}", "cd ~/gce_invoker/ansible-playbook && sudo ./bootstrap.sh"]
     ans_cmd1 = Shellwords.join(ans_arr1)
-    system(ans_cmd1)
+    run_and_exit(ans_cmd1)
 
     if local_upload?
       sync_local_kube(location)
     else
       ans_arr2 = ["ssh", "-i", ssh_key, "#{user}@#{server_ip}", "cd ~/gce_invoker/ansible-playbook && ansible-playbook kube.yaml"]
       ans_cmd2 = Shellwords.join(ans_arr2)
-      system(ans_cmd2)
+      run_and_exit(ans_cmd2)
     end
 
     invoker_arr = ["ssh", "-i", ssh_key, "#{user}@#{server_ip}", "cd ~/gce_invoker/ansible-playbook && ansible-playbook invoker.yaml"]
     invoker_cmd = Shellwords.join(invoker_arr)
-    system(invoker_cmd)
+    run_and_exit(invoker_cmd)
+  end
+
+  def run_and_exit(cmd)
+    system(cmd)
+    if $? != 0
+      puts "Error running #{cmd}"
+      exit(1)
+    end
   end
 
   def ssh_option
