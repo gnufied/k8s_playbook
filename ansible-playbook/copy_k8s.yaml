@@ -1,0 +1,29 @@
+---
+- hosts: all
+
+- hosts: all
+  vars:
+    k8s_home: "/home/{{ansible_env.USER}}/kube_binary"
+    nonroot_user: '{{ ansible_env.USER }}'
+  environment:
+    GOPATH: "/home/{{nonroot_user}}/goal"
+    GOROOT: /usr/local/go
+    PATH: '{{ ansible_env.PATH }}:/home/{{nonroot_user}}/goal/bin:/usr/local/go/bin'
+  tasks:
+    - name: Copy the binaries
+      command: >
+        chdir={{ k8s_home }}/
+        creates=/usr/local/bin/kubectl
+        cp {{item}} /usr/local/bin/
+      with_items:
+        - kubeadm
+        - kubectl
+        - hyperkube
+        - kube-apiserver
+        - kube-dns
+        - kube-controller-manager
+        - kube-discovery
+        - kubelet
+        - kube-scheduler
+        - kube-proxy
+      become: true

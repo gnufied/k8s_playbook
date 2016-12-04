@@ -6,6 +6,7 @@ require 'net/ssh'
 
 class Cluster
   attr_accessor :user, :ssh_key, :server_ip
+  attr_accessor :location
   def initialize(p_server_ip, options = {})
     @server_ip = p_server_ip
     if options[:user] && !options[:user].empty?
@@ -18,6 +19,10 @@ class Cluster
       self.ssh_key = options[:ssh_key]
     else
       self.ssh_key = File.expand_path(File.join(ENV['HOME'], ".ssh/google_compute_engine"))
+    end
+
+    if options[:location] && !options[:location].empty?
+      self.location = options[:location]
     end
   end
 
@@ -34,7 +39,30 @@ class Cluster
     ans_cmd1 = Shellwords.join(ans_arr1)
     system(ans_cmd1)
 
-    ans_arr2 = ["ssh", "-i", ssh_key, "#{user}@#{server_ip}", "cd ~/gce_invoker/ansible-playbook && ansible-playbook kube.yaml"]
+    if local_upload?
+      sync_local_kube(location)
+    else
+      ans_arr2 = ["ssh", "-i", ssh_key, "#{user}@#{server_ip}", "cd ~/gce_invoker/ansible-playbook && ansible-playbook kube.yaml"]
+      ans_cmd2 = Shellwords.join(ans_arr2)
+      system(ans_cmd2)
+    end
+
+    invoker_arr = ["ssh", "-i", ssh_key, "#{user}@#{server_ip}", "cd ~/gce_invoker/ansible-playbook && ansible-playbook invoker.yaml"]
+    invoker_cmd = Shellwords.join(invoker_arr)
+    system(invoker_cmd)
+  end
+
+  def local_upload?
+    location && !location.empty?
+  end
+
+  # copy local files to path
+  def sync_local_kube(kube_binary_path)
+    rsyc_array = ["rsync", "-Pav", '-e','ssh', '-i', ssh_key, kube_binary_path, "#{user}@#{server_ip}:kube_binary/"]
+    rsync_cmd = Shellwords.join(rsyc_array)
+    system(rsync_cmd)
+
+    ans_arr2 = ["ssh", "-i", ssh_key, "#{user}@#{server_ip}", "cd ~/gce_invoker/ansible-playbook && ansible-playbook copy_k8s.yaml"]
     ans_cmd2 = Shellwords.join(ans_arr2)
     system(ans_cmd2)
   end
@@ -59,6 +87,10 @@ class ClusterCLI < Thor
     type: :string,
     banner: "User to use, default: Ubuntu",
     aliases: [:u]
+  option :location,
+    type: :string,
+    banner: "Location of local kube binaries",
+    aliases: [:l]
   def create(server_ip)
     cluster = Cluster.new(server_ip, options)
     cluster.create
