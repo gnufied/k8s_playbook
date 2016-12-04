@@ -8,7 +8,7 @@ aws/gce or bare metal pretty quickly. Few major differences from kube-up.sh
 * Assumes a running instance accessible via ssh key. In case of GCE - instance should have Compute and storage
   permissions at minimum (You can set these permissions when you boot an instance.)
 
-![GCE Perm](https://github.com/gnufied/k8s-playbook/raw/master/images/gce_perm.png "GCE perm")
+![GCE Perm](https://raw.githubusercontent.com/gnufied/k8s_playbook/master/images/gce_perm.png "GCE perm")
 
 ### Getting started
 
