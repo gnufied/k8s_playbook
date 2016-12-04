@@ -18,6 +18,11 @@
       template: >
         src=invoker_files/invoker.j2
         dest=~/invoker_files/invoker.ini
+    - name: Create invoker env file
+      template: >
+        src=invoker_files/invoker_env.j2
+        dest=~/invoker_files/.env
+      when: ansible_local.cloud.general.name == "aws"
     - name: Check if Invoker is running
       stat:
         path: /root/.invoker/invoker.pid
