@@ -33,7 +33,6 @@ class Cluster
 
     rsyc_array = ["rsync", "-Pav", '-e', ssh_option, ".", "#{user}@#{server_ip}:gce_invoker/"]
     rsync_cmd = Shellwords.join(rsyc_array)
-    puts rsync_cmd
     system(rsync_cmd)
 
     ans_arr1 = ["ssh", "-i", ssh_key, "#{user}@#{server_ip}", "cd ~/gce_invoker/ansible-playbook && sudo ./bootstrap.sh"]
@@ -88,17 +87,17 @@ class ClusterCLI < Thor
   end
 
   desc "create", "Create a kubernetes cluster"
-  option :ssh_key,
+  method_option :ssh_key,
     type: :string,
-    banner: "SSH key to use for login",
+    desc: "SSH key to use for login",
     aliases: [:k]
-  option :user,
+  method_option :user,
     type: :string,
-    banner: "User to use, default: Ubuntu",
+    desc: "User to use, default: Ubuntu",
     aliases: [:u]
-  option :location,
+  method_option :location,
     type: :string,
-    banner: "Location of local kube binaries",
+    desc: "Location of local kube binaries",
     aliases: [:l]
   def create(server_ip)
     cluster = Cluster.new(server_ip, options)
