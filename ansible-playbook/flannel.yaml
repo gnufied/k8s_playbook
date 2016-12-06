@@ -1,0 +1,13 @@
+---
+- hosts: all
+
+- hosts: all
+  vars:
+    nonroot_user: '{{ ansible_env.SUDO_USER }}'
+  tasks:
+    - name: Download and install flanneld
+      command: "{{item}} chdir=/tmp creates=/usr/bin/flanneld"
+      with_items:
+        - "wget -nv https://github.com/coreos/flannel/releases/download/v0.6.2/flannel-v0.6.2-linux-amd64.tar.gz"
+        - "tar -zxf flannel-v0.6.2-linux-amd64.tar.gz"
+        - "cp flanneld /usr/bin/."

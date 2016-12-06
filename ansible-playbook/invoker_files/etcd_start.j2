@@ -1,0 +1,5 @@
+#!/bin/bash
+
+etcd --name=default --data-dir=/var/lib/etcd/default.etcd --listen-client-urls=http://0.0.0.0:4001 --listen-peer-urls=http://localhost:2380 --advertise-client-urls=http://0.0.0.0:4001 &
+sleep 10
+disown
