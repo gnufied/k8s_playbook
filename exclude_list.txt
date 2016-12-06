@@ -17,3 +17,5 @@ teststale
 go-bindata
 defaulter-gen
 kubeadm
+clicheck
+client-gen
