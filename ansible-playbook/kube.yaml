@@ -43,7 +43,7 @@
     - name: Copy the binaries
       command: >
         chdir={{ k8s_home }}/_output/bin
-        creates=/usr/local/bin/kubectl
+        creates=/usr/local/bin/kube-proxy
         cp {{item}} /usr/local/bin/
       with_items:
         - kubeadm

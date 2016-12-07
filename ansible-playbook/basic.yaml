@@ -49,7 +49,7 @@
         - "gem install invoker-1.5.2.gem"
       when: invoker_stat_result.stat.exists == True
     - name: Install etcd
-      command: "{{item}} chdir=/tmp creates=/usr/bin/etcd"
+      command: "{{item}} chdir=/tmp creates=/usr/bin/etcdctl"
       with_items:
         - "wget -nv https://github.com/coreos/etcd/releases/download/v3.0.15/etcd-v3.0.15-linux-amd64.tar.gz"
         - "tar -zxf etcd-v3.0.15-linux-amd64.tar.gz"
