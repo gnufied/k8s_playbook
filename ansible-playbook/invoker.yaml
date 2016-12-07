@@ -6,7 +6,7 @@
     k8s_home: "/home/{{ansible_env.USER}}/goal/src/k8s.io/kubernetes"
     nonroot_user: '{{ ansible_env.USER }}'
     invoker_root: '/home/{{nonroot_user}}/invoker_files'
-    level: 3
+    level: 4
   environment:
     GOPATH: "/home/{{nonroot_user}}/goal"
     GOROOT: /usr/local/go
