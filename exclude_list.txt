@@ -14,3 +14,6 @@ linkcheck
 mungedocs
 src
 teststale
+go-bindata
+defaulter-gen
+kubeadm
