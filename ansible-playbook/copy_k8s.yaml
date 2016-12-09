@@ -19,16 +19,31 @@
         invoker stop
       become: true
       when: invoker_state.stat.exists == True
-    - name: Copy the binaries
-      command: >
-        chdir={{ k8s_home }}/
-        cp {{item}} /usr/local/bin/
-      with_items:
-        - kubectl
-        - kube-apiserver
-        - kube-dns
-        - kube-controller-manager
-        - kubelet
-        - kube-scheduler
-        - kube-proxy
-      become: true
+    - name: Copy kubectl
+      copy: >
+        src={{k8s_home}}/kubectl
+        dest=/usr/local/bin/kubectl
+    - name: Copy kube-apiserver
+      copy: >
+        src={{k8s_home}}/kube-apiserver
+        dest=/usr/local/bin/kube-apiserver
+    - name: Copy kube-dns
+      copy: >
+        src={{k8s_home}}/kube-dns
+        dest=/usr/local/bin/kube-dns
+    - name: Copy kube-controller-manager
+      copy: >
+        src={{k8s_home}}/kube-controller-manager
+        dest=/usr/local/bin/kube-controller-manager
+    - name: Copy kubelet
+      copy: >
+        src={{k8s_home}}/kubelet
+        dest=/usr/local/bin/kubelet
+    - name: Copy kube-scheduler
+      copy: >
+        src={{k8s_home}}/kube-scheduler
+        dest=/usr/local/bin/kube-scheduler
+    - name: Copy kube-proxy
+      copy: >
+        src={{k8s_home}}/kube-proxy
+        dest=/usr/local/bin/kube-proxy
