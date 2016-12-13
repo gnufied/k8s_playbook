@@ -23,34 +23,41 @@
       copy: >
         src={{k8s_home}}/kubectl
         dest=/usr/local/bin/kubectl
+        mode=0771
       become: true
     - name: Copy kube-apiserver
       copy: >
         src={{k8s_home}}/kube-apiserver
         dest=/usr/local/bin/kube-apiserver
+        mode=0771
       become: true
     - name: Copy kube-dns
       copy: >
         src={{k8s_home}}/kube-dns
         dest=/usr/local/bin/kube-dns
+        mode=0771
       become: true
     - name: Copy kube-controller-manager
       copy: >
         src={{k8s_home}}/kube-controller-manager
         dest=/usr/local/bin/kube-controller-manager
+        mode=0771
       become: true
     - name: Copy kubelet
       copy: >
         src={{k8s_home}}/kubelet
         dest=/usr/local/bin/kubelet
+        mode=0771
       become: true
     - name: Copy kube-scheduler
       copy: >
         src={{k8s_home}}/kube-scheduler
         dest=/usr/local/bin/kube-scheduler
+        mode=0771
       become: true
     - name: Copy kube-proxy
       copy: >
         src={{k8s_home}}/kube-proxy
         dest=/usr/local/bin/kube-proxy
+        mode=0771
       become: true
