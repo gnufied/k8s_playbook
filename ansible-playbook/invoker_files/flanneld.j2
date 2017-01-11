@@ -4,7 +4,7 @@ After=network.target
 Documentation=man:flanneld(1)
 
 [Service]
-ExecStart=/usr/bin/etcd --name=default --data-dir=/var/lib/etcd/default.etcd --listen-client-urls=http://0.0.0.0:4001 --listen-peer-urls=http://localhost:2380 --advertise-client-urls=http://0.0.0.0:4001
+ExecStart=/usr/bin/flanneld
 Restart=on-success
 
 [Install]
