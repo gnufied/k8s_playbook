@@ -8,7 +8,7 @@
     - name: Copy flanneld system unit files
       template: >
         src=invoker_files/flanneld.j2
-        dest=/etc/systemd/systemd/flanneld.service
+        dest=/etc/systemd/system/flanneld.service
     - name: stop flanneld if running
       systemd: "name=flanneld daemon_reload=yes enabled=yes state=stopped"
       ignore_errors: yes
@@ -18,6 +18,10 @@
       copy: >
         src=invoker_files/fl_config.json
         dest=/tmp/flanneld/fl_config.json
+    - name: copy docker confi file
+      copy: >
+        src=invoker_files/docker.conf
+        dest=/tmp/flanneld/docker.conf
     - name: Download and install flanneld
       command: "{{item}} chdir=/tmp/flanneld creates=/usr/bin/flanneld"
       with_items:
@@ -25,6 +29,34 @@
         - "tar -zxf flannel-v0.6.2-linux-amd64.tar.gz"
         - "cp flanneld /usr/bin/."
     - name: Check etcd key
-      command: "Run emacs"
+      command: "etcdctl get /coreos.com/network/config"
+      ignore_errors: yes
+      register: etcd_config_check
     - name: Add flannel config to etcd
-      command: "etcdctl set /coreos.com/network/config < invoker_files/fl_config.json"
+      when: etcd_config_check|failed
+      shell: etcdctl set /coreos.com/network/config < /tmp/flanneld/fl_config.json
+      retries: 5
+      delay: 1
+      register: task_result
+      until: task_result.rc == 0
+    - name: start flanneld
+      systemd: "name=flanneld enabled=yes state=started"
+    - name: wait for 60 seconds
+      pause:
+        prompt: "wait for 1 minute for flanneld config"
+        minutes: 1
+    - name: stop flanneld
+      systemd: "name=flanneld enabled=yes state=stopped"
+      ignore_errors: yes
+    - name: stop docker
+      systemd: "name=docker enabled=yes state=stopped"
+    - name: configure docker
+      command: "{{item}} chdir=/tmp/flanneld"
+      with_items:
+        - "./mk-docker-opts.sh"
+        - "mkdir -p /etc/systemd/system/docker.service.d/"
+        - "cp docker.conf /etc/systemd/system/docker.service.d/"
+    - name: start flanneld
+      systemd: "name=flanneld enabled=yes state=started"
+    - name: start docker
+      systemd: "name=docker enabled=yes state=started"

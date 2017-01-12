@@ -18,3 +18,4 @@ cat > /etc/ansible/hosts <<EOF
 localhost ansible_connection=local
 EOF
 ansible-playbook -s basic.yaml
+ansible-playbook -s flannel.yaml
