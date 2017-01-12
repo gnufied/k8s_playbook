@@ -5,29 +5,26 @@
   vars:
     nonroot_user: '{{ ansible_env.SUDO_USER }}'
   tasks:
-    - name: Copy flanneld system unit files
+    - name: Install etcd service
       template: >
-        src=invoker_files/flanneld.j2
-        dest=/etc/systemd/system/flanneld.service
-    - name: stop flanneld if running
-      systemd: "name=flanneld daemon_reload=yes enabled=yes state=stopped"
+        src=invoker_files/etcd.j2
+        dest=/etc/systemd/system/etcd.service
+    - name: stop etcd systemd
+      systemd: "name=etcd daemon_reload=yes enabled=yes state=stopped"
       ignore_errors: yes
-    - name: Create flanneld install directory
-      command: "mkdir -p /tmp/flanneld"
-    - name: copy the fl config
-      copy: >
-        src=invoker_files/fl_config.json
-        dest=/tmp/flanneld/fl_config.json
-    - name: copy docker confi file
-      copy: >
-        src=invoker_files/docker.conf
-        dest=/tmp/flanneld/docker.conf
-    - name: Download and install flanneld
-      command: "{{item}} chdir=/tmp/flanneld creates=/usr/bin/flanneld"
+    - name: Install etcd
+      command: "{{item}} chdir=/tmp creates=/usr/bin/etcdctl"
       with_items:
-        - "wget -nv https://github.com/coreos/flannel/releases/download/v0.6.2/flannel-v0.6.2-linux-amd64.tar.gz"
-        - "tar -zxf flannel-v0.6.2-linux-amd64.tar.gz"
-        - "cp flanneld /usr/bin/."
+        - "wget -nv https://github.com/coreos/etcd/releases/download/v3.0.15/etcd-v3.0.15-linux-amd64.tar.gz"
+        - "tar -zxf etcd-v3.0.15-linux-amd64.tar.gz"
+        - "cp etcd-v3.0.15-linux-amd64/etcd /usr/bin/."
+        - "cp etcd-v3.0.15-linux-amd64/etcdctl /usr/bin/."
+    - name: start etcd systemd
+      systemd: "name=etcd daemon_reload=yes enabled=yes state=started"
+    - name: wait for 10 seconds before next step
+      pause:
+        prompt: "wait for 10 seconds for etcd config"
+        seconds: 10
     - name: Check etcd key
       command: "etcdctl get /coreos.com/network/config"
       ignore_errors: yes
@@ -41,10 +38,10 @@
       until: task_result.rc == 0
     - name: start flanneld
       systemd: "name=flanneld enabled=yes state=started"
-    - name: wait for 60 seconds
+    - name: wait for 10 seconds
       pause:
-        prompt: "wait for 1 minute for flanneld config"
-        minutes: 1
+        prompt: "wait for 10 seconds for flanneld config"
+        seconds: 10
     - name: stop flanneld
       systemd: "name=flanneld enabled=yes state=stopped"
       ignore_errors: yes

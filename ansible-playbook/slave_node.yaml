@@ -1,0 +1,71 @@
+---
+- hosts: all
+
+- hosts: all
+  vars:
+    k8s_home: "/home/{{ansible_env.USER}}/goal/src/k8s.io/kubernetes"
+    nonroot_user: '{{ ansible_env.USER }}'
+    invoker_root: '/home/{{nonroot_user}}/invoker_files'
+    level: 4
+  environment:
+    GOPATH: "/home/{{nonroot_user}}/goal"
+    GOROOT: /usr/local/go
+    PATH: '{{ ansible_env.PATH }}:/home/{{nonroot_user}}/goal/bin:/usr/local/go/bin'
+  tasks:
+    - name: start flanneld
+      systemd: "name=flanneld enabled=yes state=started"
+      become: true
+    - name: wait for 10 seconds
+      pause:
+        prompt: "wait for 10 seconds for flanneld config"
+        seconds: 10
+    - name: stop flanneld
+      systemd: "name=flanneld enabled=yes state=stopped"
+      ignore_errors: yes
+      become: true
+    - name: stop docker
+      systemd: "name=docker enabled=yes state=stopped"
+      become: true
+    - name: configure docker
+      command: "{{item}} chdir=/tmp/flanneld"
+      with_items:
+        - "./mk-docker-opts.sh"
+        - "mkdir -p /etc/systemd/system/docker.service.d/"
+        - "cp docker.conf /etc/systemd/system/docker.service.d/"
+      become: true
+    - name: start flanneld
+      systemd: "name=flanneld enabled=yes state=started"
+      become: true
+    - name: start docker
+      systemd: "name=docker enabled=yes state=started"
+      become: true
+    - name: Create invoker directory
+      command: mkdir -p ~/invoker_files
+    - name: Copy invoker.ini files
+      template: >
+        src=invoker_files/invoker_node.j2
+        dest=~/invoker_files/invoker.ini
+    - name: Create invoker env file
+      template: >
+        src=invoker_files/invoker_env.j2
+        dest=~/invoker_files/.env
+      when: ansible_local.cloud.general.name == "aws"
+    - name: Check if Invoker is running
+      stat:
+        path: /root/.invoker/invoker.pid
+      register: invoker_state
+      become: true
+    - name: Start invoker
+      command: >
+        chdir={{invoker_root}}
+        invoker start invoker.ini -d
+      become: true
+      when: invoker_state.stat.exists == False
+    - name: Configure kubectl
+      command: >
+        chdir={{invoker_root}}
+        {{item}}
+      with_items:
+        - "kubectl config set-cluster local --server={{server_ip}}:8080 --kubeconfig=/home/{{nonroot_user}}/.kube/config"
+        - "kubectl config set-context local --cluster=local"
+        - "kubectl config use-context local"

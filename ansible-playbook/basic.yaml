@@ -48,22 +48,6 @@
         - "gem build invoker.gemspec"
         - "gem install invoker-1.5.2.gem"
       when: invoker_stat_result.stat.exists == True
-    - name: Install etcd service
-      template: >
-        src=invoker_files/etcd.j2
-        dest=/etc/systemd/system/etcd.service
-    - name: stop etcd systemd
-      systemd: "name=etcd daemon_reload=yes enabled=yes state=stopped"
-      ignore_errors: yes
-    - name: Install etcd
-      command: "{{item}} chdir=/tmp creates=/usr/bin/etcdctl"
-      with_items:
-        - "wget -nv https://github.com/coreos/etcd/releases/download/v3.0.15/etcd-v3.0.15-linux-amd64.tar.gz"
-        - "tar -zxf etcd-v3.0.15-linux-amd64.tar.gz"
-        - "cp etcd-v3.0.15-linux-amd64/etcd /usr/bin/."
-        - "cp etcd-v3.0.15-linux-amd64/etcdctl /usr/bin/."
-    - name: start etcd systemd
-      systemd: "name=etcd daemon_reload=yes enabled=yes state=started"
     - name: Reset permissions of ansible
       command: "chown -R {{nonroot_user}}:{{nonroot_user}} /home/{{nonroot_user}}/.ansible"
     - name: Configure Cloud
@@ -72,3 +56,26 @@
       template: >
         src=invoker_files/{{ansible_local.cloud.general.name}}.j2
         dest=/etc/cloud/{{ansible_local.cloud.general.name}}.conf
+    - name: Copy flanneld system unit files
+      template: >
+        src=invoker_files/flanneld.j2
+        dest=/etc/systemd/system/flanneld.service
+    - name: stop flanneld if running
+      systemd: "name=flanneld daemon_reload=yes enabled=yes state=stopped"
+      ignore_errors: yes
+    - name: Create flanneld install directory
+      command: "mkdir -p /tmp/flanneld"
+    - name: copy the fl config
+      copy: >
+        src=invoker_files/fl_config.json
+        dest=/tmp/flanneld/fl_config.json
+    - name: copy docker config file
+      copy: >
+        src=invoker_files/docker.conf
+        dest=/tmp/flanneld/docker.conf
+    - name: Download and install flanneld
+      command: "{{item}} chdir=/tmp/flanneld creates=/usr/bin/flanneld"
+      with_items:
+        - "wget -nv https://github.com/coreos/flannel/releases/download/v0.6.2/flannel-v0.6.2-linux-amd64.tar.gz"
+        - "tar -zxf flannel-v0.6.2-linux-amd64.tar.gz"
+        - "cp flanneld /usr/bin/."

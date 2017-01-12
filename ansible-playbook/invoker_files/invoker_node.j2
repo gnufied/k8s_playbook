@@ -1,0 +1,16 @@
+[proxy]
+directory = {{invoker_root}}
+command = kube-proxy --logtostderr=true --v={{level}} --master=http://{{server_ip}}:8080
+index = 5
+
+{% if ansible_local.cloud.general.name is defined %}
+  [kubelet]
+  directory = {{invoker_root}}
+  command = kubelet --logtostderr=true --v={{level}} --cloud-provider={{ansible_local.cloud.general.name}} --cloud-config={{ansible_local.cloud.general.cloud_config}} --api_servers=http://{{server_ip}}:8080 --address=0.0.0.0 --hostname_override={{ansible_hostname}}  --allow_privileged=true
+  index = 6
+{% else %}
+  [kubelet]
+  directory = {{invoker_root}}
+  command = kubelet --logtostderr=true --v={{level}} --api_servers=http://{{server_ip}}:8080 --address=0.0.0.0 --hostname_override={{ansible_hostname}}  --allow_privileged=true
+  index = 6
+{% endif %}

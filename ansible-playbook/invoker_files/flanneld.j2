@@ -4,7 +4,7 @@ After=network.target
 Documentation=man:flanneld(1)
 
 [Service]
-ExecStart=/usr/bin/flanneld
+ExecStart=/usr/bin/flanneld -etcd-endpoints "http://{{server_ip}}:4001"
 Restart=on-success
 
 [Install]

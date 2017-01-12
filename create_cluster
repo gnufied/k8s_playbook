@@ -5,7 +5,7 @@ require 'shellwords'
 require 'net/ssh'
 
 class Cluster
-  attr_accessor :user, :ssh_key, :server_ip
+  attr_accessor :user, :ssh_key, :server_ip, :master_ip
   attr_accessor :location
   def initialize(p_server_ip, options = {})
     @server_ip = p_server_ip
@@ -24,6 +24,12 @@ class Cluster
     if options[:location] && !options[:location].empty?
       self.location = options[:location]
     end
+
+    if options[:master_ip] && !options[:master_ip].empty?
+      self.master_ip = options[:master_ip]
+    else
+      self.master_ip = p_server_ip
+    end
   end
 
   def create
@@ -39,6 +45,10 @@ class Cluster
     ans_cmd1 = Shellwords.join(ans_arr1)
     run_and_exit(ans_cmd1)
 
+    ans_arr2 = ["ssh", "-i", ssh_key, "#{user}@#{server_ip}", "cd ~/gce_invoker/ansible-playbook &&  ansible-playbook -s basic.yaml --extra-vars 'server_ip=#{server_ip}'"]
+    ans_cmd2 = Shellwords.join(ans_arr2)
+    run_and_exit(ans_cmd2)
+
     if local_upload?
       sync_local_kube(location)
     else
@@ -47,9 +57,44 @@ class Cluster
       run_and_exit(ans_cmd2)
     end
 
+    ans_arr2 = ["ssh", "-i", ssh_key, "#{user}@#{server_ip}", "cd ~/gce_invoker/ansible-playbook && ansible-playbook -s master_node.yaml --extra-vars 'server_ip=#{server_ip}'"]
+    ans_cmd2 = Shellwords.join(ans_arr2)
+    run_and_exit(ans_cmd2)
+
+
     invoker_arr = ["ssh", "-i", ssh_key, "#{user}@#{server_ip}", "cd ~/gce_invoker/ansible-playbook && ansible-playbook invoker.yaml"]
     invoker_cmd = Shellwords.join(invoker_arr)
     run_and_exit(invoker_cmd)
+  end
+
+  def node_create
+    create_dir_cmd = ["ssh", "-i", ssh_key, "#{user}@#{server_ip}", "mkdir -p ~/gce_invoker"]
+    dir_create_string = Shellwords.join(create_dir_cmd)
+    run_and_exit(dir_create_string)
+
+    rsyc_array = ["rsync", "-Pav", '-e', ssh_option, ".", "#{user}@#{server_ip}:gce_invoker/"]
+    rsync_cmd = Shellwords.join(rsyc_array)
+    run_and_exit(rsync_cmd)
+
+    ans_arr1 = ["ssh", "-i", ssh_key, "#{user}@#{server_ip}", "cd ~/gce_invoker/ansible-playbook && sudo ./bootstrap.sh"]
+    ans_cmd1 = Shellwords.join(ans_arr1)
+    run_and_exit(ans_cmd1)
+
+    ans_arr2 = ["ssh", "-i", ssh_key, "#{user}@#{server_ip}", "cd ~/gce_invoker/ansible-playbook &&  ansible-playbook -s basic.yaml --extra-vars 'server_ip=#{master_ip}'"]
+    ans_cmd2 = Shellwords.join(ans_arr2)
+    run_and_exit(ans_cmd2)
+
+    if local_upload?
+      sync_local_kube(location)
+    else
+      ans_arr2 = ["ssh", "-i", ssh_key, "#{user}@#{server_ip}", "cd ~/gce_invoker/ansible-playbook && ansible-playbook kube.yaml"]
+      ans_cmd2 = Shellwords.join(ans_arr2)
+      run_and_exit(ans_cmd2)
+    end
+
+    ans_arr2 = ["ssh", "-i", ssh_key, "#{user}@#{server_ip}", "cd ~/gce_invoker/ansible-playbook && ansible-playbook slave_node.yaml --extra-vars 'server_ip=#{master_ip}'"]
+    ans_cmd2 = Shellwords.join(ans_arr2)
+    run_and_exit(ans_cmd2)
   end
 
   def run_and_exit(cmd)
@@ -110,6 +155,28 @@ class ClusterCLI < Thor
   def create(server_ip)
     cluster = Cluster.new(server_ip, options)
     cluster.create
+  end
+
+  desc "node", "Create a kubernetes node"
+  method_option :ssh_key,
+    type: :string,
+    desc: "ssh key to use for user",
+    aliases: [:k]
+  method_option :user,
+    type: :string,
+    desc: "User to use, default: ubuntu",
+    aliases: [:u]
+  method_option :location,
+    type: :string,
+    desc: "location of local kube binaries",
+    aliases: [:l]
+  method_option :master_ip,
+    type: :string,
+    desc: "local of master",
+    aliases: [:m]
+  def node(server_ip)
+    cluster = Cluster.new(server_ip, options)
+    cluster.node_create
   end
 
   private
