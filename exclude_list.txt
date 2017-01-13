@@ -19,3 +19,5 @@ defaulter-gen
 kubeadm
 clicheck
 client-gen
+kube-aggregator
+kubemark

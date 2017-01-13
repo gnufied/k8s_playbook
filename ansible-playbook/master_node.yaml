@@ -21,10 +21,10 @@
         - "cp etcd-v3.0.15-linux-amd64/etcdctl /usr/bin/."
     - name: start etcd systemd
       systemd: "name=etcd daemon_reload=yes enabled=yes state=started"
-    - name: wait for 10 seconds before next step
+    - name: wait for 5 seconds before next step
       pause:
-        prompt: "wait for 10 seconds for etcd config"
-        seconds: 10
+        prompt: "wait for 5 seconds for etcd config"
+        seconds: 5
     - name: Check etcd key
       command: "etcdctl get /coreos.com/network/config"
       ignore_errors: yes
@@ -36,12 +36,18 @@
       delay: 1
       register: task_result
       until: task_result.rc == 0
+    - name: check docker config
+      stat:
+        path: /run/docker_opts.env
+      register: docker_opts
     - name: start flanneld
       systemd: "name=flanneld enabled=yes state=started"
+      when: docker_opts.stat.exists == False
     - name: wait for 10 seconds
       pause:
         prompt: "wait for 10 seconds for flanneld config"
         seconds: 10
+      when: docker_opts.stat.exists == False
     - name: stop flanneld
       systemd: "name=flanneld enabled=yes state=stopped"
       ignore_errors: yes
@@ -53,6 +59,7 @@
         - "./mk-docker-opts.sh"
         - "mkdir -p /etc/systemd/system/docker.service.d/"
         - "cp docker.conf /etc/systemd/system/docker.service.d/"
+      when: docker_opts.stat.exists == False
     - name: start flanneld
       systemd: "name=flanneld enabled=yes state=started"
     - name: start docker
